@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QPushButton>
+#include <QLabel>
 QTimer timer;
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->deviceList, &QListWidget::itemSelectionChanged, this, &MainWindow::OnSelect);
     connect(&timer, &QTimer::timeout, this, &MainWindow::OnTimer);
+
+    ui->statusbar->addWidget(new QLabel("no connection"));
+
   //  connect(ui->pbService, &QPushButton::pressed, this, &MainWindow::OnServiceBtn);
 }
 
@@ -65,21 +69,21 @@ void MainWindow::OnBtnSend()
 {
     if (m_service)
     {
-        qDebug()<<"send";
-        m_service->writeCharacteristic(m_characteristic, ui->lineEdit->text().toUtf8());
+        ui->textEdit->append(ui->lineEdit->text());
+        m_service->writeCharacteristic(m_service->characteristics().at(0), ui->lineEdit->text().toUtf8());
     }
 
   //  services.clear();
 }
 void MainWindow::characteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
 {
-    m_characteristic = characteristic;
+   // m_characteristic = characteristic;
     ui->textEdit->append(QString::fromUtf8(newValue));
 }
 
 void MainWindow::discoveryDone()
 {
-    timer.start(1000);
+    timer.start(10);
 }
 void MainWindow::OnTimer()
 {
@@ -93,6 +97,10 @@ void MainWindow::OnTimer()
         connect(m_service, &QLowEnergyService::errorOccurred, this, &MainWindow::errorOccurred);
 
         m_service->discoverDetails();
+        QLabel* stat= ui->statusbar->findChild<QLabel*>();
+        if (stat)
+            stat->setText("connected");
+
     }else
     {
         qDebug() << "no service";

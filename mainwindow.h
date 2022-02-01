@@ -24,6 +24,7 @@ public:
     QBluetoothDeviceInfo *selectedDeviceInfo= nullptr;
     QLowEnergyService *m_service=nullptr;
     QLowEnergyController *m_controller;
+    QLowEnergyCharacteristic m_characteristic;
 public slots:
     void Start();
     void OnConnectBtn();
@@ -33,6 +34,7 @@ public slots:
     void OnConnect();
     void OnBtnSend();
     void errorOccurred(QLowEnergyService::ServiceError newError);
+    void OnTimer();
  //   void OnServiceBtn();
     void characteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue);
 private:

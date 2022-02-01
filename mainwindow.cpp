@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QPushButton>
+QTimer timer;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->pbConnect, &QPushButton::pressed, this, &MainWindow::OnConnectBtn);
 
     connect(ui->deviceList, &QListWidget::itemSelectionChanged, this, &MainWindow::OnSelect);
+    connect(&timer, &QTimer::timeout, this, &MainWindow::OnTimer);
   //  connect(ui->pbService, &QPushButton::pressed, this, &MainWindow::OnServiceBtn);
 }
 
@@ -61,12 +63,28 @@ void MainWindow::serviceDiscovered(const QBluetoothUuid &newService)
 }
 void MainWindow::OnBtnSend()
 {
-  /*  if (m_service)
+    if (m_service)
     {
         qDebug()<<"send";
-        m_service->writeCharacteristic(QLowEnergyCharacteristic(), QByteArray("hello"));
-    }*/
-    m_service = m_controller->createServiceObject(services[services.size()-1]);//QBluetoothUuid("{0000ffe0-0000-1000-8000-00805f9b34fb}"));/*services[rows[0].row()]*/
+        m_service->writeCharacteristic(m_characteristic, ui->lineEdit->text().toUtf8());
+    }
+
+  //  services.clear();
+}
+void MainWindow::characteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
+{
+    m_characteristic = characteristic;
+    ui->textEdit->append(QString::fromUtf8(newValue));
+}
+
+void MainWindow::discoveryDone()
+{
+    timer.start(1000);
+}
+void MainWindow::OnTimer()
+{
+    timer.stop();
+    m_service = m_controller->createServiceObject(QBluetoothUuid("{0000ffe0-0000-1000-8000-00805f9b34fb}"));/*services[rows[0].row()]*/
 
     if (m_service)
     {
@@ -79,17 +97,6 @@ void MainWindow::OnBtnSend()
     {
         qDebug() << "no service";
     }
-
-  //  services.clear();
-}
-void MainWindow::characteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
-{
-    ui->textEdit->append(QString::fromUtf8(newValue));
-}
-
-void MainWindow::discoveryDone()
-{
-
 }
 void MainWindow::errorOccurred(QLowEnergyService::ServiceError newError)
 {
